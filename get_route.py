@@ -1,7 +1,7 @@
 from pprint import pprint
 
 import requests
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 # method 1
 # get all results from https://api-v3.mbta.com/routes then filter locally
@@ -40,25 +40,27 @@ def get_subway_route_long_name() -> set[str]:
     return route_long_names
 
 
-def get_subway_route_id() -> set[str]:
+def get_subway_route_id() -> set[Tuple[str, str]]:
     # get all route ids
-    route_id = set()
+    route_id = set()  # to store tuple(subway_route_long_name, subway_route_id)
     for each_subway_route in get_subway_data():
-        route_id.add(each_subway_route["id"])
+        route_id.add((each_subway_route["attributes"]["long_name"], each_subway_route["id"]))
     return route_id
 
 
-def get_subway_route_stops(id: str) -> List[Dict]:
+def get_subway_route_stops(route_id: str) -> List[Dict]:
     # return a list of stops for the route id
-    response = requests.get(f"https://api-v3.mbta.com/stops?filter[route]={id}")
+    response = requests.get(f"https://api-v3.mbta.com/stops?filter[route]={route_id}")
     return response.json()["data"]
 
 
-def get_subway_route_most_stops() -> Tuple(str, str):
-    # return a tuple of (subway route, number of stops) that has the most stops
+def list_subway_route_stops(show_max=True) -> Tuple[str, str]:
+    # return a tuple of (number of stops, subway route) that has the most or least stops
     subway_stops_count = []
-    subway_route_long_name = get_subway_route_long_name()
-    subway_route_id = get_subway_route_id()
-    for each_route_id in subway_route_id:
+    for each_route_id in get_subway_route_id():
+        subway_stops_count.append((len(get_subway_route_stops(each_route_id[1])), each_route_id[0]))
+    output = sorted(subway_stops_count)[-1] if show_max else sorted(subway_stops_count)[0]
+    print(f"Subway route with most stops: {output}" if show_max else f"Subway route with least stops: {output}")
 
 
+list_subway_route_stops(show_max=False)
