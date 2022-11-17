@@ -52,6 +52,7 @@ def get_subway_route_id() -> set[Tuple[str, str]]:
 def get_subway_route_stops(route_id: str) -> List[Dict]:
     # return a list of stops for the route id
     response = requests.get(f"https://api-v3.mbta.com/stops?filter[route]={route_id}")
+    print(f"{response.status_code} get_subway_route_stops")
     return response.json()["data"]
 
 
@@ -65,19 +66,63 @@ def list_subway_route_stops(show_max=True) -> Tuple[str, str]:
     print(f"Subway route with most stops: {output}" if show_max else f"Subway route with least stops: {output}")
 
 
-def show_subway_route(station_a_id, station_b_id):
-    # handle = station does not exist
+def show_subway_route(from_station_name: str, to_station_name: str):
+    # get all station names
+    station_names = {}
+    for route_name, route_id in get_subway_route_id():
+        print(route_name)
+        station_names[route_name] = [
+            get_subway_route_stops(route_id)[index]["attributes"]["name"] for index in range(len(get_subway_route_stops(route_id)))
+        ]
+    pprint(station_names)
+    exit
+    # check validity of subway route id inputs
+    if from_station_name is to_station_long_name:
+        raise ValueError(f"From: {from_station_name} and TO: {to_station_long_name} cannot be identical.")
+    if from_station_name not in []:
+        raise ValueError(f"{from_station_name} does not exist. Please verify station name.")
+    if to_station_name not in []:
+        raise ValueError(f"{to_station_name} does not exist. Please verify station name.")
+
     # handle = more than one possible route
-    # handle = station_a_id equals to station_b_id
+
+    # map stop long name to stop id
+    from_station_id = get_subway_route_id()[from_station_name]
+    to_station_id = get_subway_route_id()[to_station_name]
+
+    # get subway route information
+    from_response = requests.get(f"https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]={from_station_id}")
+    to_response = requests.get(f"https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]={to_station_id}")
+
+    # extract subway route long name
+    from_route_data = from_response.json()["data"]
+    to_route_data = to_response.json()["data"]
+    from_route = [
+        from_route_data[index]["attributes"]["long_name"] for index in len(from_route_data)["attributes"]["long_name"]
+    ]
+    to_route = [
+        to_route_data[index]["attributes"]["long_name"] for index in len(to_route_data)["attributes"]["long_name"]
+    ]
+
+    # get symmetric difference of from_route and to_route (A union B - A intersection B)
+    route_set = set()
+    route_set.update(from_route)
+    route_set.update(to_route)
+
+    return route_set
 
 from pprint import pprint
+# pprint(get_subway_route_stops("Orange")[-7])
+pprint(get_subway_route_stops("Red")[4])
+pprint(show_subway_route("Central Station", "North Station"))
+# pprint("Green-E" in [route_id for long_name, route_id in get_subway_route_id()])
 # pprint(get_subway_route_stops("Orange")[0])
 # response_source = requests.get("https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]=place-north")
-response_source = requests.get("https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]=place-armnl") # arlington station
+ # arlington station
 # response_destination = requests.get("https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]=place-cntsq")
-response_destination = requests.get("https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]=place-asmnl") # ashmont station
-print(response_source.json()["data"][0]["attributes"]["long_name"])
-print(response_destination.json()["data"][0]["attributes"]["long_name"])
+ # ashmont station
+# print(response_source.json()["data"][0]["attributes"]["long_name"])
+# print(response_destination.json()["data"][0]["attributes"]["long_name"])
 
 # pprint(get_subway_route_stops("Green-B"))
 # print(get_subway_route_id())
