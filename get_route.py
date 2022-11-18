@@ -66,6 +66,7 @@ def list_subway_route_stops(show_max=True) -> Tuple[str, str]:
     print(f"Subway route with most stops: {output}" if show_max else f"Subway route with least stops: {output}")
 
 
+# solution to question 3
 def show_subway_route(from_station_name: str, to_station_name: str):
     # get all station names
     station_names = {}
@@ -123,6 +124,7 @@ def show_subway_route(from_station_name: str, to_station_name: str):
     return route_set
 
 
+# driver code below
 from pprint import pprint
 
 # pprint(get_subway_route_stops("Orange")[-7])
