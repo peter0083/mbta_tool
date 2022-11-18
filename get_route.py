@@ -1,8 +1,9 @@
-from pprint import pprint
-
 import requests
 from typing import List, Dict, Tuple
 
+
+# question 1:
+#
 # method 1
 # get all results from https://api-v3.mbta.com/routes then filter locally
 # pros:
@@ -52,7 +53,6 @@ def get_subway_route_id() -> set[Tuple[str, str]]:
 def get_subway_route_stops(route_id: str) -> List[Dict]:
     # return a list of stops for the route id
     response = requests.get(f"https://api-v3.mbta.com/stops?filter[route]={route_id}")
-    print(f"{response.status_code} get_subway_route_stops")
     return response.json()["data"]
 
 
@@ -69,58 +69,71 @@ def list_subway_route_stops(show_max=True) -> Tuple[str, str]:
 def show_subway_route(from_station_name: str, to_station_name: str):
     # get all station names
     station_names = {}
-    for route_name, route_id in get_subway_route_id():
-        print(route_name)
-        station_names[route_name] = [
-            get_subway_route_stops(route_id)[index]["attributes"]["name"] for index in range(len(get_subway_route_stops(route_id)))
-        ]
-    pprint(station_names)
-    exit
+    route_name_id_set = get_subway_route_id()
+    from_station_id, to_station_id = None, None
+    for route_name, route_id in route_name_id_set:
+        raw_stops_data_per_route = get_subway_route_stops(route_id)
+        stop_name_list = []
+        for each_stop in raw_stops_data_per_route:
+            each_stop_name = each_stop["attributes"]["name"]
+            stop_name_list.append(each_stop_name)
+
+            # map from_station name to id
+            if from_station_name == each_stop_name:
+                from_station_id = each_stop["id"]
+            # map to_station name to id
+            if to_station_name == each_stop_name:
+                to_station_id = each_stop["id"]
+
+        station_names[route_name] = stop_name_list
+
+    all_stops_name = set()
+    for each_route, each_stop_list in station_names.items():
+        all_stops_name.update(each_stop_list)
+
     # check validity of subway route id inputs
-    if from_station_name is to_station_long_name:
-        raise ValueError(f"From: {from_station_name} and TO: {to_station_long_name} cannot be identical.")
-    if from_station_name not in []:
+    if not from_station_id:
+        raise ValueError(f"{from_station_name} does not have a matching station ID.")
+    if not to_station_id:
+        raise ValueError(f"{to_station_name} does not have a matching station ID.")
+    if from_station_name == to_station_name:
+        raise ValueError(f"From: {from_station_name} and TO: {to_station_name} cannot be identical.")
+    if from_station_name not in all_stops_name:
         raise ValueError(f"{from_station_name} does not exist. Please verify station name.")
-    if to_station_name not in []:
+    if to_station_name not in all_stops_name:
         raise ValueError(f"{to_station_name} does not exist. Please verify station name.")
 
-    # handle = more than one possible route
-
-    # map stop long name to stop id
-    from_station_id = get_subway_route_id()[from_station_name]
-    to_station_id = get_subway_route_id()[to_station_name]
-
-    # get subway route information
+    # get subway route information per station
     from_response = requests.get(f"https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]={from_station_id}")
     to_response = requests.get(f"https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]={to_station_id}")
 
     # extract subway route long name
     from_route_data = from_response.json()["data"]
     to_route_data = to_response.json()["data"]
-    from_route = [
-        from_route_data[index]["attributes"]["long_name"] for index in len(from_route_data)["attributes"]["long_name"]
-    ]
-    to_route = [
-        to_route_data[index]["attributes"]["long_name"] for index in len(to_route_data)["attributes"]["long_name"]
-    ]
+
+    from_route = [from_route_data[index]["attributes"]["long_name"] for index in range(len(from_route_data))]
+    to_route = [to_route_data[index]["attributes"]["long_name"] for index in range(len(to_route_data))]
 
     # get symmetric difference of from_route and to_route (A union B - A intersection B)
+    # handle multiple possible routes by taking the first route to model take-home prompt example
     route_set = set()
-    route_set.update(from_route)
-    route_set.update(to_route)
+    route_set.add(from_route[0])
+    route_set.add(to_route[0])
 
     return route_set
 
+
 from pprint import pprint
+
 # pprint(get_subway_route_stops("Orange")[-7])
-pprint(get_subway_route_stops("Red")[4])
-pprint(show_subway_route("Central Station", "North Station"))
+# pprint(get_subway_route_stops("Red")[4])
+# pprint(show_subway_route("Central", "North Station"))
+# pprint(show_subway_route("Davis", "Kendall/MIT"))
+pprint(show_subway_route("Ashmont", "Arlington"))
 # pprint("Green-E" in [route_id for long_name, route_id in get_subway_route_id()])
 # pprint(get_subway_route_stops("Orange")[0])
 # response_source = requests.get("https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]=place-north")
- # arlington station
 # response_destination = requests.get("https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]=place-cntsq")
- # ashmont station
 # print(response_source.json()["data"][0]["attributes"]["long_name"])
 # print(response_destination.json()["data"][0]["attributes"]["long_name"])
 
