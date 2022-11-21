@@ -129,23 +129,3 @@ def show_subway_route(from_station_name: str, to_station_name: str):
 
     return route_plan
 
-
-# driver code below
-# from pprint import pprint
-
-# pprint(get_subway_route_stops("Orange")[-7])
-# pprint(get_subway_route_stops("Red")[4])
-# pprint(show_subway_route("Central", "North Station"))
-# pprint(show_subway_route("Davis", "Kendall/MIT"))
-# pprint(show_subway_route("Ashmont", "Arlington"))
-# pprint("Green-E" in [route_id for long_name, route_id in get_subway_route_id()])
-# pprint(get_subway_route_stops("Orange")[0])
-# response_source = requests.get("https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]=place-north")
-# response_destination = requests.get("https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]=place-cntsq")
-# print(response_source.json()["data"][0]["attributes"]["long_name"])
-# print(response_destination.json()["data"][0]["attributes"]["long_name"])
-# pprint(get_subway_route_long_name())
-
-# pprint(get_subway_route_stops("Green-B"))
-# print(get_subway_route_id())
-# {('Green Line E', 'Green-E'), ('Green Line C', 'Green-C'), ('Mattapan Trolley', 'Mattapan'), ('Blue Line', 'Blue'), ('Orange Line', 'Orange'), ('Green Line B', 'Green-B'), ('Red Line', 'Red'), ('Green Line D', 'Green-D')}
