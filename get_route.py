@@ -1,5 +1,5 @@
 import requests
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from functools import lru_cache
 
 # question 1:
@@ -75,24 +75,8 @@ def list_subway_route_stops(show_max=True) -> Tuple[str, str]:
 @lru_cache(maxsize=20)  # set limit = 20 to reflect api limit
 def show_subway_route(from_station_name: str, to_station_name: str):
     # get all station names
-    station_names = {}
-    route_name_id = get_subway_route_id()
-    from_station_id, to_station_id = None, None
-    for route_name, route_id in route_name_id:
-        raw_stops_data_per_route = get_subway_route_stops(route_id)
-        stop_names = []
-        for stop in raw_stops_data_per_route:
-            stop_name = stop["attributes"]["name"]
-            stop_names.append(stop_name)
-
-            # map from_station name to id
-            if from_station_name == stop_name:
-                from_station_id = stop["id"]
-            # map to_station name to id
-            if to_station_name == stop_name:
-                to_station_id = stop["id"]
-
-        station_names[route_name] = stop_names
+    station_names, from_station_id, to_station_id = get_all_subway_station_names(from_station_name,
+                                                                                 to_station_name)
 
     all_stops_name = set()
     for route, stop in station_names.items():
@@ -128,3 +112,27 @@ def show_subway_route(from_station_name: str, to_station_name: str):
     route_plan.add(to_route[0])
 
     return route_plan
+
+
+def get_all_subway_station_names(
+        from_station_name: Optional[str] = None,
+        to_station_name: Optional[str] = None
+):
+    route_name_id = get_subway_route_id()
+    station_names = {}
+    for route_name, route_id in route_name_id:
+        raw_stops_data_per_route = get_subway_route_stops(route_id)
+        stop_names = []
+        for stop in raw_stops_data_per_route:
+            stop_name = stop["attributes"]["name"]
+            stop_names.append(stop_name)
+
+            # map from_station name to id
+            if from_station_name == stop_name:
+                from_station_id = stop["id"]
+            # map to_station name to id
+            if to_station_name == stop_name:
+                to_station_id = stop["id"]
+
+        station_names[route_name] = stop_names
+    return station_names, from_station_id, to_station_id
