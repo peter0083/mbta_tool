@@ -129,3 +129,5 @@ def show_subway_route(from_station_name: str, to_station_name: str):
 
     return route_plan
 
+from pprint import pprint
+pprint(get_subway_route_id())

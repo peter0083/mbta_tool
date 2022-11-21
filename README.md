@@ -7,3 +7,7 @@ To recreate the conda environment `mbta`, run the following:
 conda env create -f environment.yml
 ```
 
+To test:
+```commandline
+ python -m pytest
+```
