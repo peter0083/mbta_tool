@@ -68,7 +68,7 @@ def list_subway_route_stops(show_max=True) -> Tuple[str, str]:
         (len(get_subway_route_stops(route_id[1])), route_id[0]) for route_id in get_subway_route_id()
     ]
     output = sorted(subway_stops_count)[-1] if show_max else sorted(subway_stops_count)[0]
-    print(f"Subway route with most stops: {output}" if show_max else f"Subway route with least stops: {output}")
+    return f"Subway route with most stops: {output}" if show_max else f"Subway route with least stops: {output}"
 
 
 # solution to question 3
@@ -128,6 +128,3 @@ def show_subway_route(from_station_name: str, to_station_name: str):
     route_plan.add(to_route[0])
 
     return route_plan
-
-from pprint import pprint
-pprint(get_subway_route_id())

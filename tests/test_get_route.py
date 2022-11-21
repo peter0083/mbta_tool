@@ -551,7 +551,7 @@ def test_get_subway_route_id(mocked_get):
         status_code=200,
         json=mock_stop_response_json
     )
-    return get_route.get_subway_route_id() == expected
+    assert get_route.get_subway_route_id() == expected
 
 
 @patch("requests.get")
@@ -713,5 +713,41 @@ def test_get_subway_route_stops(mocked_get):
         status_code=200,
         json=mock_stop_response_json
     )
-    return get_route.get_subway_route_stops("Mattapan") == expected
+    assert get_route.get_subway_route_stops("Mattapan") == expected
 
+
+def get_subway_route_stops_side_effect_function(route_id):
+    mapping = {
+        'Red': [item for item in range(22)],
+        'Blue': [item for item in range(12)],
+        'Green-D': [item for item in range(25)],
+        'Green-E': [item for item in range(20)],
+        'Green-B': [item for item in range(23)],
+        'Green-C': [item for item in range(20)],
+        'Mattapan': [item for item in range(8)],
+        'Orange': [item for item in range(20)],
+    }
+    return mapping[route_id]
+
+
+def test_list_subway_route_stops():
+    expected_max = "Subway route with most stops: (25, 'Green Line D')"
+    expected_min = "Subway route with least stops: (8, 'Mattapan Trolley')"
+    with patch(
+            "get_route.get_subway_route_stops",
+            side_effect=get_subway_route_stops_side_effect_function
+    ) as route_stop_mock, patch(
+        "get_route.get_subway_route_id"
+    ) as route_id_mock:
+        route_id_mock.return_value = {
+            ('Blue Line', 'Blue'),
+            ('Green Line B', 'Green-B'),
+            ('Green Line C', 'Green-C'),
+            ('Green Line D', 'Green-D'),
+            ('Green Line E', 'Green-E'),
+            ('Mattapan Trolley', 'Mattapan'),
+            ('Orange Line', 'Orange'),
+            ('Red Line', 'Red'),
+        }
+        assert get_route.list_subway_route_stops(show_max=True) == expected_max
+        assert get_route.list_subway_route_stops(show_max=False) == expected_min
