@@ -2,7 +2,6 @@ import requests
 from typing import List, Dict, Tuple
 from functools import lru_cache
 
-
 # question 1:
 #
 # method 1
@@ -73,6 +72,7 @@ def list_subway_route_stops(show_max=True) -> Tuple[str, str]:
 
 
 # solution to question 3
+@lru_cache(maxsize=20)  # set limit = 20 to reflect api limit
 def show_subway_route(from_station_name: str, to_station_name: str):
     # get all station names
     station_names = {}
@@ -131,19 +131,20 @@ def show_subway_route(from_station_name: str, to_station_name: str):
 
 
 # driver code below
-from pprint import pprint
+# from pprint import pprint
 
 # pprint(get_subway_route_stops("Orange")[-7])
 # pprint(get_subway_route_stops("Red")[4])
 # pprint(show_subway_route("Central", "North Station"))
 # pprint(show_subway_route("Davis", "Kendall/MIT"))
-pprint(show_subway_route("Ashmont", "Arlington"))
+# pprint(show_subway_route("Ashmont", "Arlington"))
 # pprint("Green-E" in [route_id for long_name, route_id in get_subway_route_id()])
 # pprint(get_subway_route_stops("Orange")[0])
 # response_source = requests.get("https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]=place-north")
 # response_destination = requests.get("https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]=place-cntsq")
 # print(response_source.json()["data"][0]["attributes"]["long_name"])
 # print(response_destination.json()["data"][0]["attributes"]["long_name"])
+# pprint(get_subway_route_long_name())
 
 # pprint(get_subway_route_stops("Green-B"))
 # print(get_subway_route_id())
