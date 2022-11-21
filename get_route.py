@@ -1,5 +1,6 @@
 import requests
 from typing import List, Dict, Tuple
+from functools import lru_cache
 
 
 # question 1:
@@ -20,36 +21,41 @@ from typing import List, Dict, Tuple
 # - more time and memory efficient if we know what data we need. smaller data set to handle.
 # cons:
 # - still need to make changes on our end if the data provided by server api do change
+# - API limit is a bottleneck if I need to make many calls for some requirements
 
 # decision:
 # question 1, 2, 3 are related to subway routes, so I will take method 2
 
 
 # solution to question 1
+# use caching to reduce api calls
+# I use python built-in lru_cache because I do not expect the number of lines to change very often
+@lru_cache(maxsize=1)
 def get_subway_data() -> List[Dict]:
     response = requests.get("https://api-v3.mbta.com/routes?filter[type]=0,1")
     # response.json has two keys: data and jsonapi
-    # data is useful
     # data contains a list of 8 subway routes
     return response.json()["data"]
 
 
+@lru_cache(maxsize=1)
 def get_subway_route_long_name() -> set[str]:
     # get long name for all routes
-    route_long_names = set()
-    for each_subway_route in get_subway_data():
-        route_long_names.add(each_subway_route["attributes"]["long_name"])
+    route_long_names = set(subway_route["attributes"]["long_name"] for subway_route in get_subway_data())
     return route_long_names
 
 
+@lru_cache(maxsize=1)
 def get_subway_route_id() -> set[Tuple[str, str]]:
     # get all route ids
-    route_id = set()  # to store tuple(subway_route_long_name, subway_route_id)
-    for each_subway_route in get_subway_data():
-        route_id.add((each_subway_route["attributes"]["long_name"], each_subway_route["id"]))
+    route_id = set(
+        (subway_route["attributes"]["long_name"], subway_route["id"])
+        for subway_route in get_subway_data()
+    )  # to store tuple(subway_route_long_name, subway_route_id)
     return route_id
 
 
+@lru_cache(maxsize=8)  # max number of 8 subway lines
 def get_subway_route_stops(route_id: str) -> List[Dict]:
     # return a list of stops for the route id
     response = requests.get(f"https://api-v3.mbta.com/stops?filter[route]={route_id}")
@@ -59,9 +65,9 @@ def get_subway_route_stops(route_id: str) -> List[Dict]:
 # solution to Question 2
 def list_subway_route_stops(show_max=True) -> Tuple[str, str]:
     # return a tuple of (number of stops, subway route) that has the most or least stops
-    subway_stops_count = []
-    for each_route_id in get_subway_route_id():
-        subway_stops_count.append((len(get_subway_route_stops(each_route_id[1])), each_route_id[0]))
+    subway_stops_count = [
+        (len(get_subway_route_stops(route_id[1])), route_id[0]) for route_id in get_subway_route_id()
+    ]
     output = sorted(subway_stops_count)[-1] if show_max else sorted(subway_stops_count)[0]
     print(f"Subway route with most stops: {output}" if show_max else f"Subway route with least stops: {output}")
 
@@ -70,27 +76,27 @@ def list_subway_route_stops(show_max=True) -> Tuple[str, str]:
 def show_subway_route(from_station_name: str, to_station_name: str):
     # get all station names
     station_names = {}
-    route_name_id_set = get_subway_route_id()
+    route_name_id = get_subway_route_id()
     from_station_id, to_station_id = None, None
-    for route_name, route_id in route_name_id_set:
+    for route_name, route_id in route_name_id:
         raw_stops_data_per_route = get_subway_route_stops(route_id)
-        stop_name_list = []
-        for each_stop in raw_stops_data_per_route:
-            each_stop_name = each_stop["attributes"]["name"]
-            stop_name_list.append(each_stop_name)
+        stop_names = []
+        for stop in raw_stops_data_per_route:
+            stop_name = stop["attributes"]["name"]
+            stop_names.append(stop_name)
 
             # map from_station name to id
-            if from_station_name == each_stop_name:
-                from_station_id = each_stop["id"]
+            if from_station_name == stop_name:
+                from_station_id = stop["id"]
             # map to_station name to id
-            if to_station_name == each_stop_name:
-                to_station_id = each_stop["id"]
+            if to_station_name == stop_name:
+                to_station_id = stop["id"]
 
-        station_names[route_name] = stop_name_list
+        station_names[route_name] = stop_names
 
     all_stops_name = set()
-    for each_route, each_stop_list in station_names.items():
-        all_stops_name.update(each_stop_list)
+    for route, stop in station_names.items():
+        all_stops_name.update(stop)
 
     # check validity of subway route id inputs
     if not from_station_id:
@@ -117,11 +123,11 @@ def show_subway_route(from_station_name: str, to_station_name: str):
 
     # get symmetric difference of from_route and to_route (A union B - A intersection B)
     # handle multiple possible routes by taking the first route to model take-home prompt example
-    route_set = set()
-    route_set.add(from_route[0])
-    route_set.add(to_route[0])
+    route_plan = set()
+    route_plan.add(from_route[0])
+    route_plan.add(to_route[0])
 
-    return route_set
+    return route_plan
 
 
 # driver code below
