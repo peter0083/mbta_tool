@@ -1,0 +1,49 @@
+# ref1 = https://medium.com/rockedscience/docker-ci-cd-pipeline-with-github-actions-6d4cd1731030
+# ref2 = https://stackoverflow.com/questions/72703363/how-to-activate-conda-environment-in-github-actions
+name: Run unit tests with Python
+
+# Sets the events which will trigger the Action
+# `push` = any "push" action to the GitHub "remote",
+# changes to any branch will be considered
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  create-env:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+
+      - name: create environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          activate-environment: mbta
+          environment-file: environment.yml
+
+      - name: Lint the code with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Test with pytest
+        run: |
+          python -m pytest
