@@ -13,41 +13,37 @@ on:
       - '**'
 
 jobs:
-  # `build` is a user-defined name for this job
-  build:
-    # Set the base environment to run the Action on
-    runs-on: ubuntu-latest
+  create-env:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -l {0}
 
     strategy:
+      fail-fast: false
       matrix:
-        # Set the Python version(s) to run the tests with
-        python-version: [3.6, 3.9]
+        os: [ ubuntu-latest, macos-latest ]
 
-    # Steps to complete the job
     steps:
-    - name: Checking out code from the repository
-      uses: actions/checkout@v2
+      - name: checkout repository
+        uses: actions/checkout@v2
 
-    - name: Setup Conda
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        auto-update-conda: true
-        python-version: ${{ matrix.python-version }}
+      - name: create environment
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          channels: conda-forge,defaults
+          auto-activate-base: false
+          activate-environment: mbta
+          environment-file: environment.yaml
 
-    - name: Install dependencies
-      run: |
-        conda env create -f environment.yml
-        conda activate mbta
-        conda install -c anaconda flake8
+      - name: Lint the code with flake8
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-
-    - name: Lint the code with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-    - name: Test with pytest
-      run: |
-        python -m pytest
+      - name: Test with pytest
+        run: |
+          python -m pytest
