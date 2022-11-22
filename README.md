@@ -5,7 +5,7 @@ The environment and dependencies of this repo are installed using Conda.
 To use this tool inside a container (recommended):
 - first, pull the image from Docker Hub
 ```commandline
-> docker pull peter0083/mbta_tool:dev
+> docker pull peter0083/mbta_tool
 ```
 - then, execute the following for a sample output
 ```commandline
