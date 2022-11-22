@@ -104,7 +104,7 @@ def show_subway_route(from_station_name: str, to_station_name: str):
     from_response = requests.get(f"https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]={from_station_id}")
     to_response = requests.get(f"https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]={to_station_id}")
 
-    logging.info(f"Found route data.")
+    logging.info("Found route data.")
 
     # extract subway route long name
     from_route_data = from_response.json()["data"]
@@ -145,4 +145,3 @@ def get_all_subway_station_names(
 
         station_names[route_name] = stop_names
     return station_names, from_station_id, to_station_id
-
