@@ -1,4 +1,5 @@
-# reference = Article: https://medium.com/rockedscience/docker-ci-cd-pipeline-with-github-actions-6d4cd1731030
+# ref1 = https://medium.com/rockedscience/docker-ci-cd-pipeline-with-github-actions-6d4cd1731030
+# ref2 = https://stackoverflow.com/questions/72703363/how-to-activate-conda-environment-in-github-actions
 name: Run unit tests with Python
 
 # Sets the events which will trigger the Action
