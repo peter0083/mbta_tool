@@ -8,7 +8,7 @@ import sys
 def main(args=sys.argv[1:]) -> int:
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser(prog="mbta_tool", description="simple cli tool to call mbta api")
-    if args and (args[0].startswith("-h") or args[0].startswith("--help")):
+    if not args or (args and (args[0].startswith("-h") or args[0].startswith("--help"))):
         # if using -h or --help, all arguments should be displayed
         parser.add_argument("-ls_routes", "--list_subway_routes", action="store_true",
                             help="List all subway routes.")
