@@ -34,7 +34,7 @@ jobs:
         with:
           auto-activate-base: false
           activate-environment: mbta
-          environment-file: environment.yaml
+          environment-file: environment.yml
 
       - name: Lint the code with flake8
         run: |
