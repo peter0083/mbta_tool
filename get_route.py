@@ -120,6 +120,7 @@ def get_all_subway_station_names(
 ):
     route_name_id = get_subway_route_id()
     station_names = {}
+    from_station_id, to_station_id = None, None
     for route_name, route_id in route_name_id:
         raw_stops_data_per_route = get_subway_route_stops(route_id)
         stop_names = []
