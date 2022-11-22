@@ -32,7 +32,6 @@ jobs:
       - name: create environment
         uses: conda-incubator/setup-miniconda@v2
         with:
-          channels: conda-forge,defaults
           auto-activate-base: false
           activate-environment: mbta
           environment-file: environment.yaml
