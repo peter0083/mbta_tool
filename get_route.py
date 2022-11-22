@@ -1,6 +1,7 @@
 import requests
 from typing import List, Dict, Tuple, Optional
 from functools import lru_cache
+import logging
 
 # question 1:
 #
@@ -74,6 +75,7 @@ def list_subway_route_stops(show_max=True) -> Tuple[str, str]:
 # solution to question 3
 @lru_cache(maxsize=20)  # set limit = 20 to reflect api limit
 def show_subway_route(from_station_name: str, to_station_name: str):
+    logging.info("Start MBTA subway route planning...")
     # get all station names
     station_names, from_station_id, to_station_id = get_all_subway_station_names(from_station_name,
                                                                                  to_station_name)
@@ -96,9 +98,13 @@ def show_subway_route(from_station_name: str, to_station_name: str):
     if to_station_name not in all_stops_name:
         raise ValueError(f"{to_station_name} does not exist. Please verify station name.")
 
+    logging.info(f"Get subway route from {from_station_name} to {to_station_name}")
+
     # get subway route information per station
     from_response = requests.get(f"https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]={from_station_id}")
     to_response = requests.get(f"https://api-v3.mbta.com/routes?filter[type]=0,1&filter[stop]={to_station_id}")
+
+    logging.info(f"Found route data.")
 
     # extract subway route long name
     from_route_data = from_response.json()["data"]

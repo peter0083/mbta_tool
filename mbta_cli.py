@@ -1,9 +1,11 @@
 import argparse
 import get_route
 from pprint import pprint
+import logging
 
 
 def main() -> int:
+    logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser(prog="mbta_tool", description="simple cli tool to call mbta api")
     parser.add_argument("-ls_routes", "--list_subway_routes", action="store_true",
                         help="List all subway routes.")
