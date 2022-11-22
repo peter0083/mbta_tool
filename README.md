@@ -29,7 +29,33 @@ clone the repo from github then run the following:
 ```
 
 Sample Usage (assuming you have activated the conda env):
+```commandline
+(mbta)> python mbta_cli.py --list_subway_routes
+{'Blue Line',
+ 'Green Line B',
+ 'Green Line C',
+ 'Green Line D',
+ 'Green Line E',
+ 'Mattapan Trolley',
+ 'Orange Line',
+ 'Red Line'}
 
+(mbta)> python mbta_cli.py --list_subway_route_ids 
+{('Blue Line', 'Blue'),
+ ('Green Line B', 'Green-B'),
+ ('Green Line C', 'Green-C'),
+ ('Green Line D', 'Green-D'),
+ ('Green Line E', 'Green-E'),
+ ('Mattapan Trolley', 'Mattapan'),
+ ('Orange Line', 'Orange'),
+ ('Red Line', 'Red')}
+
+(mbta)> python mbta_cli.py Ashmont Arlington
+INFO:root:Start MBTA subway route planning...
+INFO:root:Get subway route from Ashmont to Arlington
+INFO:root:Found route data.
+{'Green Line B', 'Red Line'}
+```
 
 To test:
 ```commandline
