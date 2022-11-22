@@ -1,5 +1,6 @@
 import get_route
 from unittest.mock import Mock, patch
+import pytest
 
 
 mock_route_response_json = {'data': [{'attributes': {'color': 'DA291C',
@@ -554,7 +555,7 @@ def test_get_subway_route_id(mocked_get):
     assert get_route.get_subway_route_id() == expected
 
 
-@patch("requests.get")
+@patch("get_route.requests.get")
 def test_get_subway_route_stops(mocked_get):
     expected = [{'attributes': {'address': 'Dorchester Ave and Ashmont St, Boston, MA 02124',
                  'at_street': None,
@@ -709,10 +710,7 @@ def test_get_subway_route_stops(mocked_get):
                     'parent_station': {'data': None},
                     'zone': {'data': None}},
   'type': 'stop'}]
-    mocked_get.return_value = Mock(
-        status_code=200,
-        json=mock_stop_response_json
-    )
+    mocked_get.return_value.json.return_value = mock_stop_response_json
     assert get_route.get_subway_route_stops("Mattapan") == expected
 
 
@@ -3609,8 +3607,7 @@ def test_list_subway_route_stops():
         assert get_route.list_subway_route_stops(show_max=False) == expected_min
 
 
-def test_get_all_subway_station_names():
-    expected_all_station_names = {
+mock_all_station_names = {
         'Blue Line': ['Bowdoin',
                     'Government Center',
                     'State',
@@ -3763,8 +3760,44 @@ def test_get_all_subway_station_names():
                    'Braintree']
     }
 
+def test_get_all_subway_station_names():
+    expected_all_station_names = mock_all_station_names
+
     with patch(
             "get_route.get_subway_route_stops",
             side_effect=get_subway_route_stops_side_effect_function
     ) as route_stop_mock:
         assert get_route.get_all_subway_station_names(None, None) == (expected_all_station_names, None, None)
+        assert get_route.get_all_subway_station_names("Ashmont", "Arlington") == (
+            expected_all_station_names,
+            "place-asmnl",
+            "place-armnl"
+        )
+
+
+def test_show_subway_route():
+    with patch("get_route.get_all_subway_station_names") as all_station_names_mock:
+        all_station_names_mock.return_value = (
+            mock_all_station_names,
+            None,
+            None
+        )
+
+        with pytest.raises(ValueError, match=r"None and None do not have matching station IDs."):
+            get_route.show_subway_route(None, None)
+
+        all_station_names_mock.return_value = (
+            mock_all_station_names,
+            "place-asmnl",
+            "place-armnl"
+        )
+        expected_route_set1 = {"Red Line", "Green Line B"}
+        assert get_route.show_subway_route("Ashmont", "Arlington") == expected_route_set1
+
+        all_station_names_mock.return_value = (
+            mock_all_station_names,
+            "place-davis",
+            "place-knncl"
+        )
+        expected_route_set2 = {"Red Line"}
+        assert get_route.show_subway_route("Davis", "Kendall/MIT") == expected_route_set2

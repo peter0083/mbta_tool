@@ -83,6 +83,8 @@ def show_subway_route(from_station_name: str, to_station_name: str):
         all_stops_name.update(stop)
 
     # check validity of subway route id inputs
+    if not from_station_id and not to_station_id:
+        raise ValueError(f"{from_station_name} and {to_station_name} do not have matching station IDs.")
     if not from_station_id:
         raise ValueError(f"{from_station_name} does not have a matching station ID.")
     if not to_station_id:
@@ -137,3 +139,4 @@ def get_all_subway_station_names(
 
         station_names[route_name] = stop_names
     return station_names, from_station_id, to_station_id
+
