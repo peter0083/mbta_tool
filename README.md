@@ -5,11 +5,11 @@ The environment and dependencies of this repo are installed using Conda.
 To use this tool inside a container (recommended):
 - first, pull the image from Docker Hub
 ```commandline
-> docker pull peter0083/mbta_tool
+> docker pull peter0083/mbta_tool:main
 ```
 - then, execute the following for a sample output
 ```commandline
-> docker run peter0083/mbta_tool:dev
+> docker run peter0083/mbta_tool:main
 INFO:root:Start MBTA subway route planning...
 INFO:root:Get subway route from Ashmont to Arlington
 INFO:root:Found route data.
@@ -17,7 +17,7 @@ INFO:root:Found route data.
 ```
 - to run the container interactively
 ```commandline
-> docker container run -ti --entrypoint /bin/bash peter0083/mbta_tool:dev
+> docker container run -ti --entrypoint /bin/bash peter0083/mbta_tool:main
 > conda active mbta
 ```
 
